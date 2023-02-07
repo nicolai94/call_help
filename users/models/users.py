@@ -30,8 +30,8 @@ class User(AbstractUser): # наследуемся от базового кла�
         return f'{self.full_name} ({self.pk})'
 
 
-@receiver(post_save, sender=User) # использование сигналов
+@receiver(post_save, sender=User)  # использование сигналов
 def post_save_user(sender, instance, created, **kwargs):
-    if not hasattr(instance, 'profile'): # проверяем есть ли у юзера созданный профиль через related_name
-        Profile.objects.create(user=instance) # если нет, то создаем новый
+    if not hasattr(instance, 'profile'):  # проверяем есть ли у юзера созданный профиль через related_name
+        Profile.objects.create(user=instance)  # если нет, то создаем новый
 
