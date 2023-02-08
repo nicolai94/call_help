@@ -4,9 +4,36 @@ from django.db import models
 User = get_user_model()
 
 
+class GroupInfo(models.Model):
+    group = models.OneToOneField(
+        to='organisations.Group',
+        on_delete=models.CASCADE,
+        # related_name='break_info',
+        verbose_name='Группа',
+        primary_key=True  # ставлю в базе id именно группы
+    )
+    min_active = models.PositiveSmallIntegerField(
+        verbose_name='Минимальное количество активных сотрудников',
+        null=True,
+        blank=True
+    )
+    break_start = models.TimeField(verbose_name='Начало обеда', null=True, blank=True)
+    break_end = models.TimeField(verbose_name='Конец обеда', null=True, blank=True)
+    break_max_duration = models.PositiveSmallIntegerField(
+        verbose_name='Максимальная длительность обеда', null=True, blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Параметр обеденного перерыва'
+        verbose_name_plural = 'Параметры обеденных перерывов'
+
+    def __str__(self):
+        return f'{self.group}'
+
+
 class Replacement(models.Model):
     group = models.ForeignKey(
-        to='breaks.Group',
+        to='breaks.GroupInfo',
         on_delete=models.CASCADE,
         related_name='replacements',
         verbose_name='Группа',

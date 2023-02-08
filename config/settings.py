@@ -41,6 +41,7 @@ INSTALLED_APPS += [
     'common',
     'users',
     'breaks',
+    'organisations',
 ]
 
 AUTH_USER_MODEL = 'users.User'

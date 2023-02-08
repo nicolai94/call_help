@@ -3,12 +3,8 @@ from django.contrib.admin import TabularInline
 from django.db.models import Count
 from django.urls import reverse
 from django.utils.html import format_html
-
-from breaks.models import groups
 from breaks.models.breaks import Break
 from breaks.models.dicts import ReplacementStatus, BreakStatus
-from breaks.models.groups import Group
-from breaks.models.organisations import Organisation
 from breaks.models.replacements import Replacement, ReplacementEmployee
 
 
@@ -23,36 +19,6 @@ class ReplacementEmployeeInline(TabularInline):
 ################################################################
 # Models
 ################################################################
-@admin.register(Organisation)
-class OrganisationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'director')
-    # fields = ('name', ) # разрешает поле
-    # exclude = ('name', ) # исключает поле
-    filter_horizontal = ('employees', ) # делает удобный выбор из списка
-    # filter_vertical = ('employees, ')
-
-
-@admin.register(Group)
-class GroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'manager', 'min_active', 'replacement_count')
-    search_fields = ('name', ) # поисковик по полям если добавить __startwith то будет толкьо четкое
-    # совпадение
-
-
-################################################################
-# Счетчик кол-ва смен в админке
-    def replacement_count(self, obj):  # создал счетчик в адмиинке для подсчета смен в группе
-        return obj.replacement_count
-
-    replacement_count.short_description = 'Количество смен' # задал название поля
-
-    def get_queryset(self, request): # создал подсчет и сделал переменную
-        queryset = groups.Group.objects.annotate(
-            replacement_count=Count('replacements__id')
-        )
-        return queryset
-########################################################################
-
 
 @admin.register(BreakStatus)
 class BreakStatusAdmin(admin.ModelAdmin):
@@ -67,7 +33,7 @@ class ReplacementStatusAdmin(admin.ModelAdmin):
 @admin.register(Replacement)
 class ReplacementAdmin(admin.ModelAdmin):
     list_display = ('id', 'group', 'date', 'break_start', 'break_end', 'break_duration')
-    autocomplete_fields = ('group', ) # позволяет втоматически дополнять название поля (***)
+    # autocomplete_fields = ('group', ) # позволяет втоматически дополнять название поля (***)
     inlines = (ReplacementEmployeeInline,)
     ordering = ('id',)
 
