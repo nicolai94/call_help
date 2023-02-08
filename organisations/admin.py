@@ -30,10 +30,16 @@ class ProfileBreakInline(StackedInline):
         'break_max_duration',
     )
 
-
 ################################################################
 # Models
 ################################################################
+
+
+@admin.register(dicts.Position)
+class PositionAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'sort', 'is_active')
+
+
 @admin.register(Organisation)
 class OrganisationAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'director')
@@ -42,16 +48,19 @@ class OrganisationAdmin(admin.ModelAdmin):
     filter_horizontal = ('employees', ) # делает удобный выбор из списка
     # filter_vertical = ('employees, ')
     inlines = (EmployeeInline, )
+    readonly_fields = (
+        'created_at', 'updated_at', 'created_by', 'updated_by'
+    )
 
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'manager', 'min_active')
+    list_display = ('id', 'name', 'manager')
     list_display_links = ('id', 'name')
     search_fields = ('name', ) # поисковик по полям если добавить __startwith то будет толкьо четкое совпадение
     inlines = (MemberInline, ProfileBreakInline)
+    readonly_fields = (
+        'created_at', 'updated_at', 'created_by', 'updated_by'
+    )
 
 
-@admin.register(dicts.Position)
-class ReplacementStatusAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'sort', 'is_active')

@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 from breaks.models.breaks import Break
 from breaks.models.dicts import ReplacementStatus, BreakStatus
-from breaks.models.replacements import Replacement, ReplacementEmployee
+from breaks.models.replacements import Replacement, ReplacementEmployee, GroupInfo
 
 
 ################################################################
@@ -20,13 +20,20 @@ class ReplacementEmployeeInline(TabularInline):
 # Models
 ################################################################
 
-@admin.register(BreakStatus)
-class BreakStatusAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'sort', 'is_active')
+@admin.register(GroupInfo)
+class GroupInfoAdmin(admin.ModelAdmin):
+    list_display = (
+        'group', 'break_start', 'break_end'
+    )
 
 
 @admin.register(ReplacementStatus)
 class ReplacementStatusAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'sort', 'is_active')
+
+
+@admin.register(BreakStatus)
+class BreakStatusAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'sort', 'is_active')
 
 

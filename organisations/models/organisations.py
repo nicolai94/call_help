@@ -4,10 +4,12 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 
+from common.models.mixins import InfoMixin
+
 User = get_user_model()
 
 
-class Organisation(models.Model):
+class Organisation(InfoMixin):
     name = models.CharField('Название', max_length=255)
     director = models.ForeignKey(
         to=User,

@@ -50,7 +50,7 @@ class MeView(RetrieveUpdateAPIView):  # показ и изменение про�
     http_method_names = ('get', 'patch')  # для того чтобы убрать метод put и работать только patch
 
     def get_serializer_class(self):  # переопределить метод сериализаторов
-        if self.request.method in ['PUT', 'PATCH']: # условие для изменения
+        if self.request.method in ['PUT', 'PATCH']:  # условие для изменения
             return user_s.MeUpdateSerializer
         return user_s.MeSerializer
 

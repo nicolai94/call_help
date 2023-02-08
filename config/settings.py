@@ -64,6 +64,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+MIDDLEWARE += ('crum.CurrentRequestUserMiddleware',)
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -120,6 +122,7 @@ REST_FRAMEWORK = {
 
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.BasePagination',  # написанный класс пагинации
 }
 
 AUTH_PASSWORD_VALIDATORS = [
