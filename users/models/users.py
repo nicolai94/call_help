@@ -15,6 +15,8 @@ class User(AbstractUser): # наследуемся от базового кла�
 
     USERNAME_FIELD = 'username' # поле для выбора авторизации
     REQUIRED_FIELDS = ['email'] # указание какие поля должны быть обязательными
+    # корпоративный аккаунт или нет
+    is_corporate_account = models.BooleanField(default=False, verbose_name='Корпоративный аккаунт')
 
     objects = CustomUserManager()
 

@@ -1,0 +1,27 @@
+from rest_framework.permissions import BasePermission, SAFE_METHODS
+
+
+class IsNotCorporate(BasePermission):  # кастомный пермишн для корпоративных пользователей
+    """
+    Allows access only to not corporate users.
+    """
+    # отобразит сообщение в случае ошибки то же самое что
+    # в сериализаторе
+    # def validate(self, attrs):  # attrs все данные из запроса
+    #     user = self.instance  # получаю данные внутри модели
+    #     if user.is_corporate_account:
+    #         raise ParseError(
+    #             'У вас корпоративный аккаунт. '
+    #             'Обратитесь к администратору для изменения данных профиля'
+    #         )
+    #     return attrs
+    message = (
+        'У вас корпоративный аккаунт. Данное действие недоступно.'
+        'Обратитесь к администратору для изменения данных профиля'
+    )
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:  # позволяет все запросы кроме изменения (PUT, POST, PATCH)
+            return bool(request.user and request.user.is_authenticated)
+        return bool(request.user and request.user.is_authenticated and not request.user.is_corporate_account)
+

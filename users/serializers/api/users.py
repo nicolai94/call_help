@@ -111,10 +111,11 @@ class MeUpdateSerializer(serializers.ModelSerializer):  # для PUT PATCH за�
         # Проверка наличия профиля
         profile_data = validated_data.pop('profile') if 'profile' in validated_data else None  # проверка на ошибки если нет данных
 
-        with transaction.atomic(): # создание транзакции для обновления значений
+        with transaction.atomic():  # создание транзакции для обновления значений
             instance = super().update(instance, validated_data) # дальше по умолчанию сделать update
             # Update профиля
-            self._update_profile(profile=instance.profile, data=profile_data)
+            if profile_data:
+                self._update_profile(profile=instance.profile, data=profile_data)
         return instance
 
     def _update_profile(self, profile, data): # сделал внутреннюю функцию и вызвал сверху
@@ -127,3 +128,14 @@ class MeUpdateSerializer(serializers.ModelSerializer):  # для PUT PATCH за�
                                                      partial=True)  # partial частичное изменение
         profile_serializer.is_valid(raise_exception=True)
         profile_serializer.save()
+
+
+class UserSearchListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'full_name',
+        )

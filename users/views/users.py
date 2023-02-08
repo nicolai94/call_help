@@ -3,11 +3,13 @@ import pdb
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import *
 from rest_framework.views import APIView
 
+from common.views.mixins import ListViewSet
+from users.permissions import IsNotCorporate
 from users.serializers.api import users as user_s
 
 User = get_user_model()
@@ -48,6 +50,7 @@ class MeView(RetrieveUpdateAPIView):  # показ и изменение про�
     queryset = User.objects.all()
     serializer_class = user_s.MeSerializer
     http_method_names = ('get', 'patch')  # для того чтобы убрать метод put и работать только patch
+    permission_classes = [IsNotCorporate]  # только для зарегистрированный
 
     def get_serializer_class(self):  # переопределить метод сериализаторов
         if self.request.method in ['PUT', 'PATCH']:  # условие для изменения
@@ -56,5 +59,13 @@ class MeView(RetrieveUpdateAPIView):  # показ и изменение про�
 
     def get_object(self):
         return self.request.user
+
+
+@extend_schema_view(  # автодокументация для spectacular
+    list=extend_schema(summary='Список пользователей Search', tags=['Пользователи']),)
+class UserListSearchView(ListViewSet):
+    # Убрать из списка суперюзеров
+    queryset = User.objects.all()
+    serializer_class = user_s.UserSearchListSerializer
 
 
