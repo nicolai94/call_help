@@ -1,4 +1,4 @@
-from django_filters import OrderingFilter
+from rest_framework.filters import OrderingFilter
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import SearchFilter, BaseFilterBackend
 

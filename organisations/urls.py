@@ -1,16 +1,18 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from organisations.views import dicts, organisations, employees
+
+from organisations.views import dicts, organisations, employees, groups, offers
 
 router = DefaultRouter()
 
-router.register(r'dicts/positions', viewset=dicts.PositionView, basename='reg')
-router.register(r'search', viewset=organisations.OrganisationSearchView, basename='organisation-search')
-router.register(r'manage', viewset=organisations.OrganisationView, basename='organisations')
-# регулярное выражение для изменения id
-router.register(r'manage/(?P<pk>\d+)/employees', viewset=employees.EmployeeView, basename='employees')
+router.register(r'dicts/positions', dicts.PositionView, 'positions')
+router.register(r'search', organisations.OrganisationSearchView, 'organisations-search')
+router.register(r'(?P<pk>\d+)/employees', employees.EmployeeView, 'employees')
+router.register(r'offers', offers.OfferUserView, 'user-offers')
+router.register(r'(?P<pk>\d+)/offers', offers.OfferOrganisationView, 'org-offers')
+router.register(r'groups', groups.GroupView, 'groups')
+router.register(r'', organisations.OrganisationView, 'organisations')
 
 urlpatterns = [
+    path('organisations/', include(router.urls)),
 ]
-
-urlpatterns += path('organisations/', include(router.urls)),

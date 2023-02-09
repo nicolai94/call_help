@@ -27,3 +27,10 @@ class IsMyGroup(BasePermission):
             return obj.organisation.employees.all(
                 user=request.user).exists()  # является ли пользователь сотрудником организации
         return False
+
+
+class IsOfferManager(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if obj.organisation.director == request.user:
+            return True
+        return False

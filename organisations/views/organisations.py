@@ -1,5 +1,5 @@
 from django.db.models import Count, Case, When
-from django_filters import OrderingFilter
+from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import SearchFilter

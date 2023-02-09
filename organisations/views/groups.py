@@ -1,5 +1,5 @@
 from django.db.models import Count, Case, When, Q
-from django_filters import OrderingFilter
+from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import SearchFilter, BaseFilterBackend
@@ -9,7 +9,7 @@ from organisations.filters import EmployeeFilter, GroupFilter
 from organisations.models.groups import Group
 from organisations.models.organisations import Employee
 from organisations.permissions import IsColleagues, IsMyGroup
-from organisations.serializers.api import group as group_s
+from organisations.serializers.api import groups as group_s
 
 
 @extend_schema_view(
@@ -20,7 +20,7 @@ from organisations.serializers.api import group as group_s
     partial_update=extend_schema(summary='Изменить группу частично', tags=['Организации: Группы']),
 )
 class GroupView(CRUDViewSet):
-    queryset = Employee.objects.all()
+    queryset = Group.objects.all()
     serializer_class = group_s.GroupListSerializer
     permission_classes = [IsMyGroup]
     multi_serializer_class = {
