@@ -1,7 +1,12 @@
+from django_filters import OrderingFilter
 from drf_spectacular.utils import extend_schema_view, extend_schema
+from rest_framework.filters import SearchFilter, BaseFilterBackend
 
 from common.views.mixins import CRUDViewSet
+from organisations.backends import OwnedByOrganisation
+from organisations.filters import EmployeeFilter
 from organisations.models.organisations import Employee
+from organisations.permissions import IsColleagues
 from organisations.serializers.api import employees as employees_s
 
 
@@ -16,23 +21,44 @@ from organisations.serializers.api import employees as employees_s
 class EmployeeView(CRUDViewSet):
     queryset = Employee.objects.all()
     serializer_class = employees_s.EmployeeListSerializer
+    permission_classes = [IsColleagues]
+    multi_serializer_class = {
+        'list': employees_s.EmployeeListSerializer,  # можно задать разное отображение для разных групп пользователей
+        'retrieve': employees_s.EmployeeRetrieveSerializer,
+        'create': employees_s.EmployeeCreateSerializer,
+        'update': employees_s.EmployeeUpdateSerializer,
+        'partial_update': employees_s.EmployeeUpdateSerializer
+    }
 
     lookup_url_kwarg = 'employee_id'  # чтобы не было конфликта при вызове url адреса
+    http_method_names = ('get', 'put', 'post', 'patch')
 
-    def get_serializer_class(self):  # переопределить метод сериализаторов
-        if self.action == 'retrieve':  # method GET
-            return employees_s.EmployeeRetrieveSerializer
-        elif self.action == 'create':  # method POST
-            return employees_s.EmployeeCreateSerializer
-        elif self.action == 'update':  # method PUT
-            return employees_s.EmployeeUpdateSerializer
-        elif self.action == 'partial_update':  # method PATCH
-            return employees_s.EmployeeUpdateSerializer
-        return self.serializer_class
+    filter_backends = (
+        BaseFilterBackend,
+        OrderingFilter,
+        SearchFilter,
+        OwnedByOrganisation,
+    )
+    filterset_class = EmployeeFilter
+    ordering = ('position', 'date_joined', 'id')
+
+
+    # def get_serializer_class(self):  # переопределить метод сериализаторов
+    #     if self.action == 'retrieve':  # method GET
+    #         return employees_s.EmployeeRetrieveSerializer
+    #     elif self.action == 'create':  # method POST
+    #         return employees_s.EmployeeCreateSerializer
+    #     elif self.action == 'update':  # method PUT
+    #         return employees_s.EmployeeUpdateSerializer
+    #     elif self.action == 'partial_update':  # method PATCH
+    #         return employees_s.EmployeeUpdateSerializer
+    #     return self.serializer_class
 
     def get_queryset(self):  # фильтрую всех сотрудников и отбираю тех кто по id совпадает с текущим, кто меняет из URL
-        organisation_id = self.request.parser_context['kwargs'].get('pk')  # получить id из URL
-        queryset = Employee.objects.filter(
-            organisation_id=organisation_id
+        qs = Employee.objects.select_related(
+            'user',
+            'position',
+        ).prefetch_related(
+            'organisation',
         )
-        return queryset
+        return qs
