@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from common.models.mixins import InfoMixin
-from organisations.constants import DIRECTOR_POSITION
+from organisations.constants import DIRECTOR_POSITION, MANAGER_POSITION, OPERATOR_POSITION
 
 User = get_user_model()
 
@@ -42,34 +42,42 @@ class Organisation(InfoMixin):
         return obj
 
 
-class Employee(models.Model):  # должность
+class Employee(models.Model):
     organisation = models.ForeignKey(
-        to='Organisation',
-        on_delete=models.CASCADE,
-        related_name='employees_info',
-        verbose_name='Сотрудник'
+        'Organisation', models.CASCADE, 'employees_info',
     )
     user = models.ForeignKey(
-        to=User,
-        on_delete=models.CASCADE,
-        related_name='organisations_info',
-        verbose_name='Пользователь',
+        User, models.CASCADE, 'organisations_info',
     )
     position = models.ForeignKey(
-        to='Position',
-        on_delete=models.RESTRICT,
-        related_name='employees',
-        verbose_name='Должность',
+        'Position', models.RESTRICT, 'employees',
     )
     date_joined = models.DateField('Date joined', default=timezone.now)
 
     class Meta:
         verbose_name = 'Сотрудник организации'
-        verbose_name_plural = 'Сотрудники организации'
-        ordering = ('-date_joined', )
-        unique_together = (('organisation', 'user'), )
-        # указываем какие поля должны быть уникальны совместно, чтобы нельзя было создать несколько раз одно и то же
+        verbose_name_plural = 'Сотрудники организаций'
+        ordering = ('-date_joined',)
+        unique_together = (('organisation', 'user'),)
 
     def __str__(self):
-        return f'Employee {self.user}'
+        return f'Employee #{self.pk} {self.user}'
+
+    @property
+    def is_director(self):
+        if self.position_id == DIRECTOR_POSITION:
+            return True
+        return False
+
+    @property
+    def is_manager(self):
+        if self.position_id == MANAGER_POSITION:
+            return True
+        return False
+
+    @property
+    def is_operator(self):
+        if self.position_id == OPERATOR_POSITION:
+            return True
+        return False
 

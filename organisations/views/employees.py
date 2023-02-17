@@ -1,3 +1,4 @@
+from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import SearchFilter, BaseFilterBackend
@@ -17,6 +18,7 @@ from organisations.serializers.api import employees as employees_s
     update=extend_schema(summary='Изменить сотрудника организации', tags=['Организации: Сотрудники']),
     partial_update=extend_schema(summary='Изменить сотрудника организации частично', tags=['Организации: Сотрудники']),
     destroy=extend_schema(summary='Удалить сотрудника организации', tags=['Организации: Сотрудники']),
+    search=extend_schema(filters=True, summary='Список сотружников органзации Search', tags=['Словари']),
 )
 class EmployeeView(CRUDViewSet):
     queryset = Employee.objects.all()
@@ -27,7 +29,9 @@ class EmployeeView(CRUDViewSet):
         'retrieve': employees_s.EmployeeRetrieveSerializer,
         'create': employees_s.EmployeeCreateSerializer,
         'update': employees_s.EmployeeUpdateSerializer,
-        'partial_update': employees_s.EmployeeUpdateSerializer
+        'search': employees_s.EmployeeSearchSerializer,
+        'partial_update': employees_s.EmployeeUpdateSerializer,
+        'destroy': employees_s.EmployeeDeleteSerializer,
     }
 
     lookup_url_kwarg = 'employee_id'  # чтобы не было конфликта при вызове url адреса
@@ -62,3 +66,13 @@ class EmployeeView(CRUDViewSet):
             'organisation',
         )
         return qs
+
+    @action(method=['GET'], detail=False, url_path='search')
+    def search(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=dict())
+        serializer.is_valid(raise_exception=True)
+        return super().destroy(request, *args, **kwargs)
