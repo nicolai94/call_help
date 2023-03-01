@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from common.models.mixins import InfoMixin
+
 User = get_user_model()
 
 
@@ -31,7 +33,7 @@ class GroupInfo(models.Model):
         return f'{self.group}'
 
 
-class Replacement(models.Model):
+class Replacement(InfoMixin):
     group = models.ForeignKey(
         to='breaks.GroupInfo',
         on_delete=models.CASCADE,
@@ -41,17 +43,54 @@ class Replacement(models.Model):
     date = models.DateField(verbose_name='Дата смены')
     break_start = models.TimeField(verbose_name='Начало обеда')
     break_end = models.TimeField(verbose_name='Конец обеда')
-    break_duration = models.PositiveSmallIntegerField(
+    break_max_duration = models.PositiveSmallIntegerField(
         verbose_name='Макс. продолжительность обеда'
+    )
+    min_active = models.PositiveSmallIntegerField(
+        verbose_name='Мин. число активных сотрудников', null=True, blank=True
+    )
+    members = models.ManyToManyField(
+        'organisations.Member',
+        related_name='replacements',
+        through='ReplacementMember',
+        verbose_name='Участник смены'
     )
 
     class Meta:
         verbose_name = 'Смена'
         verbose_name_plural = 'Смены'
-        ordering = ('date', )
+        ordering = ('-date', )
 
     def __str__(self):
         return f' Смена № {self.pk} для ({self.group})'
+
+
+class ReplacementMember(models.Model):
+    member = models.ForeignKey(
+        to='organisations.Member',
+        on_delete=models.CASCADE,
+        related_name='replacements_info',
+        verbose_name='Сотрудник',
+    )
+    replacement = models.ForeignKey(
+        to='breaks.Replacement',
+        on_delete=models.CASCADE,
+        related_name='members_info',
+        verbose_name='Смена'
+    )
+    status = models.ForeignKey(
+        to='breaks.ReplacementStatus',
+        on_delete=models.RESTRICT,
+        related_name='members',
+        verbose_name='Статус'
+    )
+
+    class Meta:
+        verbose_name = 'Смена - участник группы'
+        verbose_name_plural = 'Смены - участники группы'
+
+    def __str__(self):
+        return f' Участник смены № {self.member.employee.user} ({self.pk})'
 
 
 class ReplacementEmployee(models.Model):

@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
+
+from breaks.managers.groups import GroupManager
 from organisations.models.organisations import Employee
 from common.models.mixins import InfoMixin
 
@@ -21,6 +23,8 @@ class Group(InfoMixin):
         'Employee', 'groups_members', verbose_name='Участники группы',
         blank=True, through='Member',
     )
+
+    objects = GroupManager()
 
     class Meta:
         verbose_name = 'Группа'

@@ -8,6 +8,11 @@ class OwnedByOrganisation(BaseFilterBackend):  # чтобы могли увид�
         return queryset.filter(organisation_id=org_id)
 
 
+class OwnedByGroup(BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        group_id = request.parser_context['kwargs'].get('pk')
+        return queryset.filter(organisation_id=group_id)
+
 class MyOrganisation(BaseFilterBackend):  # кастомный бэкенд для фильтра чтобы оставить среди всех организаций, где текущий пользователь директор либо сотрудник
     def filter_queryset(self, request, queryset, view):
         user = request.user

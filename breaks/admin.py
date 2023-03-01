@@ -39,7 +39,7 @@ class BreakStatusAdmin(admin.ModelAdmin):
 
 @admin.register(Replacement)
 class ReplacementAdmin(admin.ModelAdmin):
-    list_display = ('id', 'group', 'date', 'break_start', 'break_end', 'break_duration')
+    list_display = ('id', 'group', 'date', 'break_start', 'break_end', 'break_max_duration', 'min_active')
     # autocomplete_fields = ('group', ) # позволяет втоматически дополнять название поля (***)
     inlines = (ReplacementEmployeeInline,)
     ordering = ('id',)

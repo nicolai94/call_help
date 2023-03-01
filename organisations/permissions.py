@@ -19,6 +19,15 @@ class IsColleagues(IsAuthenticated):  # имеем ли мы доступ к и�
         return False
 
 
+class IsMembers(IsAuthenticated):  # имеем ли мы доступ к изменению сотрудника или нет
+    def has_object_permission(self, request, view, obj):
+        if obj.group.organisation.director == request.user or obj.group.manager.user == request.user:
+            return True
+        if request.method in SAFE_METHODS:
+            return request.user in obj.group.organisation.employees.all()
+        return False
+
+
 class IsMyGroup(IsAuthenticated):
     def has_object_permission(self, request, view, obj):
         if obj.organisation.director == request.user:

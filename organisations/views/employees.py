@@ -67,7 +67,7 @@ class EmployeeView(CRUDViewSet):
         )
         return qs
 
-    @action(method=['GET'], detail=False, url_path='search')
+    @action(methods=['GET'], detail=False, url_path='search')
     def search(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
