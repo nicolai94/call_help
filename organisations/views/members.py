@@ -1,6 +1,7 @@
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.decorators import action
 
+from common.views.mixins import LCDViewSet
 from organisations.backends import OwnedByGroup
 from organisations.models.groups import Member
 from organisations.permissions import IsColleagues

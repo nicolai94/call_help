@@ -1,4 +1,5 @@
 from rest_framework import mixins
+from rest_framework.generics import GenericAPIView
 from rest_framework.viewsets import GenericViewSet
 
 from common.constants import roles
@@ -72,6 +73,10 @@ class ListViewSet(ExtendedGenericViewSet, mixins.ListModelMixin):
     pass
 
 
+class UpdateViewSet(ExtendedGenericViewSet, mixins.UpdateModelMixin):
+    pass
+
+
 class DictListMixin(ListViewSet):
     serializer_class = DictMixinSerializer
     pagination_class = None
@@ -84,21 +89,45 @@ class DictListMixin(ListViewSet):
         return self.model.objects.filter(is_active=True)
 
 
-class CRUViewSet(ExtendedGenericViewSet,
+class LCRUViewSet(ExtendedGenericViewSet,
+                  mixins.CreateModelMixin,
+                  mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.ListModelMixin, ):
+    pass
+
+
+class LCRUDViewSet(LCRUViewSet,
+                   mixins.DestroyModelMixin, ):
+    pass
+
+
+class LCUViewSet(ExtendedGenericViewSet,
+                 mixins.ListModelMixin,
                  mixins.CreateModelMixin,
-                 mixins.RetrieveModelMixin,
-                 mixins.UpdateModelMixin,
-                 mixins.ListModelMixin,):
+                 mixins.UpdateModelMixin, ):
     pass
 
 
-class CRUDViewSet(CRUViewSet,
-                  mixins.DestroyModelMixin,):
+class LCDViewSet(ExtendedGenericViewSet,
+                 mixins.ListModelMixin,
+                 mixins.CreateModelMixin,
+                 mixins.DestroyModelMixin, ):
     pass
 
-
-class ListCreateUpdateViewSet(ExtendedGenericViewSet,
-                              mixins.ListModelMixin,
-                              mixins.CreateModelMixin,
-                              mixins.UpdateModelMixin,):
+class ExtendedGenericAPIView(ExtendedView, GenericAPIView):
     pass
+
+class ExtendedCRUAPIView(mixins.RetrieveModelMixin,
+                         mixins.CreateModelMixin,
+                         mixins.UpdateModelMixin,
+                         ExtendedGenericAPIView):
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+

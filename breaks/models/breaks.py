@@ -16,11 +16,11 @@ class Break(models.Model):
         related_name='breaks',
         verbose_name='Смена'
     )
-    employee = models.ForeignKey(
-        to=User,
+    member = models.ForeignKey(
+        to='organisations.ReplacementMember',
         on_delete=models.CASCADE,
         related_name='breaks',
-        verbose_name='Сотрудник',
+        verbose_name='Участник смены',
     )
     break_start = models.TimeField(verbose_name='Начало обеда', null=True, blank=True)
     break_end = models.TimeField(verbose_name='Конец обеда', null=True, blank=True)
@@ -38,19 +38,15 @@ class Break(models.Model):
         ordering = ('-replacement__date', 'break_start')
 
     def __str__(self):
-        return f'Обед пользователя {self.employee} ({self.pk})'
+        return f'Обед пользователя {self.member} ({self.pk})'
 
     def save(self, *args, **kwargs):
-        if not self.pk: # проверка на создание 1 раз, есть ли id
-            status, created = BreakStatus.objects.get_or_create( # в случае если обьекта нет то создаем обьект, иаче просто еберем его
+        if not self.pk:  # проверка на создание 1 раз, есть ли id
+            status, created = BreakStatus.objects.get_or_create(
+                # в случае если объекта нет то создаем обьект, иначе просто берем его
                 code=BREAK_CREATED_STATUS,
                 defaults=BREAK_CREATED_DEFAULT
             )
             self.status = status
             # self.status = BreakStatus.objects.filter(code=BREAK_CREATED_STATUS).first() # сразу задаем статус из константы
         return super().save(*args, **kwargs)
-
-
-
-
-
