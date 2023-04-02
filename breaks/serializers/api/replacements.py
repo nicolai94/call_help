@@ -1,11 +1,17 @@
+from crum import get_current_user
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
 
+from breaks.constants import REPLACEMENT_MEMBER_ONLINE, REPLACEMENT_MEMBER_OFFLINE, REPLACEMENT_MEMBER_BUSY, \
+    REPLACEMENT_MEMBER_BREAK
 from breaks.models.replacements import Replacement, GroupInfo
-from breaks.serializers.internal.replacements import ReplacementStatsSerializer
+from breaks.serializers.api.groups import GroupShortSerializer
+from breaks.serializers.internal.replacements import ReplacementStatsSerializer, ReplacementGeneralSerializer, \
+    ReplacementPersonalStatsSerializer
 from common.serializers.mixins import InfoModelSerializer
 from organisations.models.groups import Group, Member
 
@@ -22,9 +28,69 @@ class ReplacementListSerializer(InfoModelSerializer):
 
 
 class ReplacementRetrieveSerializer(InfoModelSerializer):
+    group = GroupShortSerializer(source='group.group')
+    stats = ReplacementStatsSerializer(source='*')
+
+    new_stats = serializers.SerializerMethodField()
+    general = ReplacementGeneralSerializer(source='*')  # создаем вложенный сериализатор на основе нвого обьекта
+    personal_stats = serializers.SerializerMethodField()
+
     class Meta:
         model = Replacement
-        fields = '__all__'
+        fields = (
+            'id',
+            'group',
+            'date',
+            'break_start',
+            'break_end',
+            'break_max_duration',
+            'min_active',
+            'stats',
+
+            'general',
+            'new_stats',
+            'personal_stats',
+        )
+
+    def get_new_stats(self, instance):  # определение и подсчет новых полей
+        # с помощью питона
+        # result = {
+        #     'members_count': instance.members.count(),
+        #     'breaks_count': instance.breaks.count(),
+        #     'members_online': instance.members_info.filter(
+        #         status_id=REPLACEMENT_MEMBER_ONLINE
+        #     ).count(),
+        #     'member_offline': instance.members_info.filter(
+        #         status_id=REPLACEMENT_MEMBER_OFFLINE
+        #     ).count(),
+        #     'member_busy': instance.members_info.filter(
+        #         status_id=REPLACEMENT_MEMBER_BUSY
+        #     ).count(),
+        #     'member_break': instance.members_info.filter(
+        #         status_id=REPLACEMENT_MEMBER_BREAK
+        #     ).count(),
+        # }
+        # то же что и верхнее но лучше
+        # с помощью Django ORM
+        result = self.Meta.model.objects.filter(pk=instance.pk).aggregate(
+            members_count=Count('members', distinct=True),
+            breaks_count=Count('breaks', distinct=True),
+            members_online=Count('members', filter=Q(members__info__status_id=REPLACEMENT_MEMBER_ONLINE), distinct=True),
+            member_offline=Count('members', filter=Q(members__info__status_id=REPLACEMENT_MEMBER_OFFLINE), distinct=True),
+            member_busy=Count('members', filter=Q(members__info__status_id=REPLACEMENT_MEMBER_BUSY), distinct=True),
+            member_break=Count('members', filter=Q(members__info__status_id=REPLACEMENT_MEMBER_BREAK), distinct=True),
+        )
+        return result
+
+    def get_personal_stats(self, instance):
+        user = get_current_user()
+        member = instance.members_info.filter(
+            member__employee__user=user,
+        ).first()
+        if not member:
+            return None
+        return ReplacementPersonalStatsSerializer(member).data
+
 
 
 class ReplacementCreateSerializer(InfoModelSerializer):

@@ -6,6 +6,7 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import SearchFilter, BaseFilterBackend
 
 from breaks.factory.replacements import ReplacementFactory
+from breaks.filters import ReplacementFilter
 from breaks.models.replacements import Replacement
 from common.views.mixins import CRUDViewSet
 from breaks.serializers.api import replacements as replacements_s
@@ -36,7 +37,7 @@ class ReplacementView(CRUDViewSet):
         DjangoFilterBackend,
         # MyReplacement
     )
-    # filterset_class = ReplacementFilter
+    filterset_class = ReplacementFilter
 
     def get_queryset(self):
         return ReplacementFactory().list()

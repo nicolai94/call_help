@@ -54,7 +54,7 @@ class BreakAdmin(admin.ModelAdmin):
     list_filter = ('status',) # фильтр по любому из полей, добавив __ можно фильтровать по внутреннему полю
     # readonly_fields = ('break_start', ) # если нужно только чтение updated_at, created_at
     empty_value_display = 'Unknown' # заменяет неизвестные значениея на текст
-    radio_fields = {'status': admin.VERTICAL} # радио кнопки для поля
+    # radio_fields = {'status': admin.VERTICAL} # радио кнопки для поля
 
     def replacement_link(self, obj): # работает как и link_display но с переходом на нужный link
         link = reverse(
