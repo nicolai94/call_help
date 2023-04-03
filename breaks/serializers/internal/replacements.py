@@ -1,8 +1,10 @@
 import datetime
 
+from crum import get_current_user
 from rest_framework import serializers
 from breaks.models.replacements import ReplacementMember, Replacement
 from breaks.serializers.api.groups import GroupShortSerializer
+from breaks.serializers.internal.breaks import BreakForReplacementSerializer
 from common.serializers.mixins import ExtendedModelSerializer
 
 
@@ -71,3 +73,17 @@ class ReplacementPersonalStatsSerializer(serializers.Serializer):
         delta_minute = delta % 60
         result = f'{delta_hour // 10} {delta_hour % 10}:{delta_minute // 10}{delta_minute % 10}'
         return result
+
+
+class ReplacementBreaksSerializer(serializers.Serializer):
+    info = serializers.SerializerMethodField()
+    button = serializers.SerializerMethodField()
+
+    def get_info(self, instance):
+        user = get_current_user()
+        break_obj = instance.get_break_for_user(user)
+        return BreakForReplacementSerializer(break_obj, allow_null=True).data
+
+    def get_button(self, instance):
+        user = get_current_user()
+        return instance.get_break_for_user(user)

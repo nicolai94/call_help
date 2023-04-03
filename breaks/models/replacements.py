@@ -112,6 +112,25 @@ class Replacement(InfoMixin):
         )
         return data_seq_qs.first().breaks
 
+    #   передаем пользователя и получаем участника текущей смены
+    def get_member_by_user(self, user):
+        return self.members_info.filter(
+            member__employee__user=user
+        ).first()
+
+    def get_break_for_user(self, user):
+        return self.breaks.filter(member__member__employee__user=user).first()
+
+    def get_break_status_for_user(self, user):
+        member = self.get_member_by_user(user)
+        break_obj = self.get_break_for_user(user)
+        now = timezone.now().astimezone()  # добавляет временную зону
+        if not member or self.date != now.date():
+            return None
+        if not break_obj:
+            return 'create'
+        return 'update'
+
 
 class ReplacementMember(models.Model):
     member = models.ForeignKey(
