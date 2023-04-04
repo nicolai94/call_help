@@ -3,7 +3,7 @@ from rest_framework.filters import OrderingFilter
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import SearchFilter, BaseFilterBackend
 
-from common.views.mixins import CRUDViewSet
+from common.views.mixins import LCRUDViewSet
 from organisations.backends import OwnedByOrganisation
 from organisations.filters import EmployeeFilter
 from organisations.models.organisations import Employee
@@ -20,7 +20,7 @@ from organisations.serializers.api import employees as employees_s
     destroy=extend_schema(summary='Удалить сотрудника организации', tags=['Организации: Сотрудники']),
     search=extend_schema(filters=True, summary='Список сотружников органзации Search', tags=['Словари']),
 )
-class EmployeeView(CRUDViewSet):
+class EmployeeView(LCRUDViewSet):
     queryset = Employee.objects.all()
     serializer_class = employees_s.EmployeeListSerializer
     permission_classes = [IsColleagues]

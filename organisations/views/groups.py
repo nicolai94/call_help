@@ -4,7 +4,7 @@ from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import SearchFilter, BaseFilterBackend
-from common.views.mixins import CRUDViewSet
+from common.views.mixins import LCRUViewSet
 from organisations.backends import OwnedByOrganisation, MyGroup
 from organisations.filters import EmployeeFilter, GroupFilter
 from organisations.models.groups import Group
@@ -20,9 +20,9 @@ from organisations.serializers.api import groups as group_s
     update=extend_schema(summary='Изменить группу', tags=['Организации: Группы']),
     partial_update=extend_schema(summary='Изменить группу частично', tags=['Организации: Группы']),
     update_settings=extend_schema(summary='Изменить настройки группы', tags=['Организации: Группы']),
-
 )
-class GroupView(CRUDViewSet):
+
+class GroupView(LCRUViewSet):
     queryset = Group.objects.all()
     serializer_class = group_s.GroupListSerializer
     permission_classes = [IsMyGroup]

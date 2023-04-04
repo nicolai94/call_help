@@ -10,12 +10,12 @@ from rest_framework.exceptions import ParseError
 
 from breaks.constants import REPLACEMENT_MEMBER_ONLINE, REPLACEMENT_MEMBER_OFFLINE, REPLACEMENT_MEMBER_BUSY, \
     REPLACEMENT_MEMBER_BREAK
-from breaks.models.replacements import Replacement, GroupInfo
+from breaks.models.replacements import Replacement, GroupInfo, ReplacementMember
 from breaks.serializers.api.groups import GroupShortSerializer
 from breaks.serializers.internal.replacements import ReplacementStatsSerializer, ReplacementGeneralSerializer, \
     ReplacementPersonalStatsSerializer, ReplacementBreaksSerializer
-from breaks.serializers.nested.replacements import ReplacementMemberShortSerializer
-from common.serializers.mixins import InfoModelSerializer
+from breaks.serializers.nested.replacements import ReplacementMemberShortSerializer, ReplacementBreakSerializer
+from common.serializers.mixins import InfoModelSerializer, DictMixinSerializer
 from organisations.models.groups import Group, Member
 
 User = get_user_model()
@@ -31,13 +31,11 @@ class ReplacementListSerializer(InfoModelSerializer):
 
 
 class ReplacementRetrieveSerializer(InfoModelSerializer):
-    group = GroupShortSerializer(source='group.group')
-    stats = ReplacementStatsSerializer(source='*')
 
-    new_stats = serializers.SerializerMethodField()
-    general = ReplacementGeneralSerializer(source='*')  # создаем вложенный сериализатор на основе нвого обьекта
+    stats = serializers.SerializerMethodField()
+    general = ReplacementGeneralSerializer(source='*')
     personal_stats = serializers.SerializerMethodField()
-    breaks = ReplacementBreaksSerializer(source='*')
+    breaks = ReplacementBreakSerializer(source='*')
     actions = serializers.SerializerMethodField()
     members = ReplacementMemberShortSerializer(source='members_info', many=True)
 
@@ -52,10 +50,11 @@ class ReplacementRetrieveSerializer(InfoModelSerializer):
             'break_max_duration',
             'min_active',
             'stats',
-
-            'general',
-            'new_stats',
             'personal_stats',
+            'breaks',
+            'actions',
+            'members',
+            'general',
         )
 
     def get_new_stats(self, instance):  # определение и подсчет новых полей
@@ -361,3 +360,45 @@ class ReplacementUpdateSerializer(InfoModelSerializer):
             )
         return value
 
+
+class ReplacementMemberListSerializer(InfoModelSerializer):
+    status = DictMixinSerializer()
+
+    class Meta:
+        model = ReplacementMember
+        fields = (
+            'id',
+            'status',
+        )
+
+
+class ReplacementMemberUpdateSerializer(InfoModelSerializer):
+
+    class Meta:
+        model = ReplacementMember
+        fields = (
+            'id',
+            'status',
+        )
+
+    def validate_status(self, value):
+        now = datetime.datetime.now().astimezone().date()
+        if self.instance.replacement.date != now:
+            raise ParseError(
+                'Смена ещё не началась или уже завершилась.'
+            )
+
+        value_code = value.code
+        instance_value_code = self.instance.status_id
+        if value_code == REPLACEMENT_MEMBER_ONLINE:
+            if self.instance.time_offline:
+                raise ParseError(
+                    'Вы уже завершили смену.'
+                )
+        elif value == REPLACEMENT_MEMBER_OFFLINE:
+            if instance_value_code != REPLACEMENT_MEMBER_ONLINE:
+                raise ParseError(
+                    'Невозможно завершить смену. '
+                    'Проверьте все незавершенные активности смены.'
+                )
+        return value

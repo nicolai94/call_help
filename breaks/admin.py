@@ -47,19 +47,15 @@ class ReplacementAdmin(admin.ModelAdmin):
 
 @admin.register(Break)
 class BreakAdmin(admin.ModelAdmin):
-    list_display = ('id', 'replacement_link', 'break_start', 'break_end', 'status')  # show columns and fields
-    # ordering = ('id', ) # show different ordering
-    # list_display = ('__str__', 'id', 'replacement', 'break_start', 'break_end')
-    # list_display_links = ('id', 'replacement', 'break_start', 'break_end') # просто ссылка для перехода в модель
-    list_filter = ('status',) # фильтр по любому из полей, добавив __ можно фильтровать по внутреннему полю
-    # readonly_fields = ('break_start', ) # если нужно только чтение updated_at, created_at
-    empty_value_display = 'Unknown' # заменяет неизвестные значениея на текст
-    # radio_fields = {'status': admin.VERTICAL} # радио кнопки для поля
+    list_display = (
+        'id', 'replacement_link', 'break_start', 'break_end',
+    )
+    empty_value_display = 'Unknown'
 
-    def replacement_link(self, obj): # работает как и link_display но с переходом на нужный link
+    def replacement_link(self, obj):
         link = reverse(
             'admin:breaks_replacement_change', args=[obj.replacement.id]
-        ) # путь до страницы изменения обьекта
-        return format_html('<a href="{}">{}</a>', link, obj.replacement) # передаю html код
+        )
+        return format_html('<a href="{}">{}</a>', link, obj.replacement)
 
 

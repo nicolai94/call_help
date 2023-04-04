@@ -5,7 +5,7 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 
-from common.views.mixins import ListViewSet, CRUDViewSet, CRUViewSet
+from common.views.mixins import ListViewSet, LCRUViewSet
 from organisations.backends import MyOrganisation
 from organisations.filters import OrganisationFilter
 from organisations.models.organisations import Organisation
@@ -28,7 +28,7 @@ class OrganisationSearchView(ListViewSet):
     partial_update=extend_schema(summary='Изменить организацию частично', tags=['Организации']),
 
 )
-class OrganisationView(CRUViewSet):  # сделали свой сет
+class OrganisationView(LCRUViewSet):  # сделали свой сет
     permission_classes = [IsMyOrganisation]
     multi_permissions_classes = {  # возможность для каждого метода задать permission
         'list': [IsMyOrganisation | IsAuthenticated]
